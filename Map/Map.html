@@ -1,0 +1,359 @@
+<!--StAuth10244: I Rajanpreet Kaur, 000929965 certify that this material is my original work. 
+No other person's work has been used without due acknowledgement. I have not made my work available to anyone else-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>My Google Map</title>
+    <style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #ffdde1, #b2fefa); 
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Main Container */
+.container {
+    max-width: 850px;
+    width: 90%;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* Header */
+h1 {
+    font-size: 2rem;
+    color: #6a0572; 
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Map Styling */
+#map {
+    height: 340px; 
+    width: 100%;
+    border-radius: 10px;
+    border: 3px solid #6a0572; 
+    box-shadow: 0px 4px 10px rgba(106, 5, 114, 0.3);
+}
+
+/* Input & Buttons Section */
+#geolocation-container {
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+}
+
+/* Input Field */
+#addressInput {
+    border: 2px solid #05716c; 
+    border-radius: 5px;
+    padding: 8px;
+    width: 60%;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+#addressInput:focus {
+    border-color: #ff69b4; 
+    box-shadow: 0px 0px 8px rgba(255, 105, 180, 0.4);
+}
+
+/* Button Styling */
+.map-button, button {
+    background: linear-gradient(to right, #6a0572, #05716c); 
+    border: none;
+    color: white;
+    font-size: 14px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.map-button:hover, button:hover {
+    background: linear-gradient(to right, #05716c, #6a0572); /* Reverse Gradient */
+    transform: scale(1.05);
+}
+
+/* Button Group */
+.btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Coordinates Display */
+#coords {
+    font-size: 13px;
+    margin-top: 5px;
+    font-weight: bold;
+    color: #05716c;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 5px;
+    border-radius: 5px;
+    display: inline-block;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+}
+</style>
+    </head>
+    <body>
+        <h1>Explore Nearby Parks and Museums</h1>
+        <div class="container">
+            <div class="row justify-content-center mb-3">
+                <div class="col-md-6">
+                    <div class="btn-group">
+                        <button class="btn btn-primary map-button" onclick="showAllMarkers()">Show All</button>
+                        <button class="btn btn-primary map-button" onclick="filterMarkers('Park')">Show Parks</button>
+                        <button class="btn btn-primary map-button" onclick="filterMarkers('Museum')">Show Museums</button>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center mb-3">
+                <div class="col-md-6">
+                    <div id="geolocation-container">
+                        <input type="text" id="addressInput" class="form-control mb-2" placeholder="Enter address">
+                        <button class="btn btn-primary" onclick="geocodeAddress()">Go</button>
+                        <button class="btn btn-primary" onclick="getUserLocation()">Use My Location</button>
+                        <button class="btn btn-primary" onclick="getDirections()">Get Directions</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="map" class="mb-3"></div>
+        <div id="coords"></div>
+
+        <script src="location.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        let currentLocationMarker = null;
+        let destinationMarker = null;
+        let map;
+        let markers = []; // Array to store markers
+    
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: { lat: 43.2387, lng: -79.8881 }, // Default center
+            });
+            geocoder = new google.maps.Geocoder();
+            markers = []; // Initialize markers array
+    
+            // put markers on the map for all the places
+            for (let i = 0; i < places.length; i++) {
+                // Set the icon based on the category of the place
+                let new_icon;
+                if (places[i].TYPE === "Park")
+                    new_icon = "http://maps.google.com/mapfiles/kml/paddle/grn-blank.png";
+                else if (places[i].TYPE === "Museum")
+                    new_icon = "http://maps.google.com/mapfiles/kml/paddle/pink-blank.png";
+                else
+                    new_icon = "http://maps.google.com/mapfiles/kml/paddle/blu-blank-png";
+    
+                // create the marker
+                let new_marker = new google.maps.Marker({
+                    position: {
+                        lat: places[i].LATITUDE,
+                        lng: places[i].LONGITUDE
+                    },
+                    title: places[i].NAME,
+                    icon: new_icon,
+                    map: map
+                });
+    
+                // create the infowindow for this marker
+                const infowindow = new google.maps.InfoWindow({
+                    content: places[i].ADDRESS,
+                });
+    
+                // add click event listener to show infowindow
+                new_marker.addListener("click", () => {
+                    setDestinationMarker(new_marker);
+                    const contentString = `
+                        <div>
+                            <h3>${places[i].NAME}</h3>
+                            <p><strong>Address:</strong> ${places[i].ADDRESS}</p>
+                            <p><strong>Type:</strong> ${places[i].TYPE}</p>
+                            <p><strong>Other Info:</strong> ${places[i].OTHERINFO}</p>
+                        </div>
+                    `;
+                    infowindow.setContent(contentString);
+                    infowindow.open(map, new_marker);
+                });
+    
+                // add mouseover event listener to show brief info
+                new_marker.addListener("mouseover", () => {
+                    infowindow.setContent(`<strong>${places[i].NAME}</strong>`);
+                    infowindow.open(map, new_marker);
+                });
+    
+                // add mouseout event listener to close infowindow
+                new_marker.addListener("mouseout", () => {
+                    infowindow.close();
+                });
+    
+                markers.push(new_marker); // push marker to markers array
+            }
+        }
+        // Function to filter markers based on type
+        function filterMarkers(type) {
+            markers.forEach((marker) => {
+                if (type === 'Park' && marker.icon.includes('grn-blank')) {
+                    marker.setVisible(true);
+                } else if (type === 'Museum' && marker.icon.includes('pink-blank')) {
+                    marker.setVisible(true);
+                } else {
+                    marker.setVisible(false);
+                }
+            });
+        }
+
+        // Function to show all markers
+        function showAllMarkers() {
+            markers.forEach((marker) => {
+                marker.setVisible(true);
+            });
+        }
+    
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showUserPosition, showError);
+            } else {
+                console.log("Geolocation is not supported by this browser.");
+            }
+        }
+        // Function to get directions from current location to destination
+        function getDirections() {
+            console.log("Getting directions...");
+            console.log("Current Location Marker:", currentLocationMarker);
+            console.log("Destination Marker:", destinationMarker);
+            if (currentLocationMarker && destinationMarker) {
+                const directionsService = new google.maps.DirectionsService();
+                const directionsRenderer = new google.maps.DirectionsRenderer();
+                directionsRenderer.setMap(map);
+    
+                const request = {
+                    origin: currentLocationMarker.getPosition(),
+                    destination: destinationMarker.getPosition(),
+                    travelMode: 'DRIVING'
+                };
+    
+                directionsService.route(request, function(result, status) {
+                    if (status == 'OK') {
+                        directionsRenderer.setDirections(result);
+                    } else {
+                        console.error('Error fetching directions:', status);
+                    }
+                });
+            } else {
+                console.error('Current location or destination not set.');
+            }
+        }
+        // Function to set the destination marker when a user clicks on a marker
+        function setDestinationMarker(marker) {
+            destinationMarker = marker;
+            console.log('Destination set:', destinationMarker.getPosition().toString());
+        }
+        // Update the showUserPosition function to store the current location marker
+        function showUserPosition(position) {
+            const userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            currentLocationMarker = addMarkerWithIcon(userLocation,"http://maps.google.com/mapfiles/kml/paddle/ylw-blank.png" );
+        }
+        function showError(error) {
+            let errorMessage = "";
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "User denied the request for Geolocation.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Location information is unavailable.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "The request to get user location timed out.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    errorMessage = "An unknown error occurred.";
+                    break;
+            }
+            console.log(errorMessage);
+        }
+        function addMarkerWithIcon(location, iconUrl) {
+            return new google.maps.Marker({
+                position: location,
+                map: map,
+                icon: iconUrl
+            });
+        }
+    
+        function geocodeAddress() {
+    var address = document.getElementById('addressInput').value.trim();
+    var geocoder = new google.maps.Geocoder();
+
+    if (!address) {
+        alert("Please enter a valid address.");
+        return;
+    }
+
+    geocoder.geocode({ 'address': address }, function (results, status) {
+        if (status === 'OK' && results.length > 0) {
+            // Clear previous destination marker
+            if (destinationMarker) {
+                destinationMarker.setMap(null);
+            }
+
+            // Use only the first geocoded result
+            var location = results[0].geometry.location;
+            destinationMarker = addMarkerWithIcon(location, "http://maps.google.com/mapfiles/kml/paddle/ylw-blank.png");
+
+            // Center map on new location
+            map.setCenter(location);
+
+            // Display coordinates
+            document.getElementById("coords").innerHTML =
+                `Coords: ${location.lat()}, ${location.lng()}`;
+
+            console.log('Destination Marker set:', location);
+        } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+        }
+    });
+}
+
+</script>
+
+<script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC9fSGoRJhPWwtD-v4PyTfzqgL6iwL_G5M&callback=initMap"></script>
+
+        
+</body>    
+
+
+
+</html>
