@@ -1,0 +1,260 @@
+<!--"StAuth10244: I Rajanpreet Kaur, 000929965 certify that this material is my original work.
+No other person's work has been used without due acknowledgement. I have not made my work available to anyone else."-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ReactJS Card Deck</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+  body {
+    margin: 0;
+    background: linear-gradient(135deg, #ff9cee 0%, #ff6bc5 100%);
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+  }
+  .app {
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    color: #fff;
+  }
+  .deck {
+    width: 120px;
+    height: 180px;
+    background: linear-gradient(45deg, #ff85c1, #ffb6d9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .deck:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+  }
+  .no-cards {
+    width: 120px;
+    height: 180px;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    border: 3px dashed #ffccff;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    text-align: center;
+    padding: 10px;
+  }
+  .controls {
+        margin-bottom: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      button {
+        padding: 12px 25px;
+        background: linear-gradient(90deg, #d580ff, #8a2be2);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(90deg, #8a2be2, #d580ff);
+      }
+
+      .cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+
+      .card {
+        width: 90px;
+        height: 140px;
+        background: linear-gradient(135deg, #fff 0%, #ffe6f2 100%);
+        border: 3px solid #ff99cc;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: bold;
+        color: #ff3399;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .card:hover::before {
+        opacity: 1;
+      }
+
+      .card:hover {
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .card.picked {
+        border: 4px solid #d580ff;
+        box-shadow: 0 0 15px #d580ff, 0 8px 20px rgba(0, 0, 0, 0.2);
+        transform: scale(1.05);
+      }
+
+      .card span {
+        position: relative;
+        z-index: 1;
+      }
+
+</style>
+  </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+        
+    const Card = ({ suit, value, isPicked, onClick }) => {
+  const suitSymbols = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
+  const cardClass = `card ${isPicked ? 'picked' : ''}`;
+  return React.createElement(
+    'div',
+    { className: cardClass, onClick },
+    `${value}${suitSymbols[suit]}`
+  );
+};
+    const App = () => {
+        const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
+        const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        const [deck, setDeck] = React.useState(() =>
+        suits.flatMap(suit => values.map(value => ({ suit, value })))
+   );
+   const [drawnCards, setDrawnCards] = React.useState([]);
+   const [pickedIndex, setPickedIndex] = React.useState(null);
+   const drawRandomCard = () => {
+    if (deck.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * deck.length);
+    const card = deck[randomIndex];
+    setDeck(prevDeck => prevDeck.filter((_, i) => i !== randomIndex));
+    setDrawnCards(prevCards => [...prevCards, card]);
+  };
+  const dealCards = (count) => {
+    if (deck.length + drawnCards.length < count) return;
+    setDeck(prevDeck => [...prevDeck, ...drawnCards]);
+    setDrawnCards([]);
+    setPickedIndex(null);
+    const newCards = [];
+    let currentDeck = [...deck, ...drawnCards];
+    for (let i = 0; i < count && currentDeck.length > 0; i++) {
+      const randomIndex = Math.floor(Math.random() * currentDeck.length);
+      newCards.push(currentDeck[randomIndex]);
+      currentDeck = currentDeck.filter((_, i) => i !== randomIndex);
+    }
+    setDeck(currentDeck);
+    setDrawnCards(newCards);
+  };
+  const handleReset = () => {
+    setDeck(suits.flatMap(suit => values.map(value => ({ suit, value }))));
+    setDrawnCards([]);
+    setPickedIndex(null);
+  };
+  const handleCardClick = (index) => {
+    if (pickedIndex === null) {
+      setPickedIndex(index);
+    } else if (pickedIndex === index) {
+      setPickedIndex(null);
+    } else {
+      setDrawnCards(prevCards => {
+        const newCards = [...prevCards];
+        [newCards[pickedIndex], newCards[index]] = [newCards[index],newCards[pickedIndex]];
+        return newCards;
+      });
+      setPickedIndex(null);
+    } };
+    const handleToss = () => {
+    if (pickedIndex !== null) {
+      setDrawnCards(prevCards => prevCards.filter((_, i) => i !== pickedIndex));
+      setPickedIndex(null);
+    }
+  };
+  const handleWildcard = () => {
+    const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+    const randomValue = values[Math.floor(Math.random() * values.length)];
+    setDrawnCards(prevCards => [...prevCards, { suit: randomSuit, value: randomValue }]);
+  };
+  const handleRegroup = () => {
+    setDrawnCards(prevCards => [...prevCards].sort(() => Math.random() - 0.5));
+  };
+        return React.createElement(
+    'div',
+    { className: 'app' },
+    deck.length > 0
+    ? React.createElement('div', { className: 'deck',onClick: drawRandomCard }, 'Deck')
+    : React.createElement('div', { className: 'no-cards' }, 'No cards remaining'),
+    React.createElement(
+      'div',
+      { className: 'controls' },
+      React.createElement('button', { onClick: () => dealCards(5) }, 'Deal 5'),
+      React.createElement('button', { onClick: () => dealCards(7) }, 'Deal 7'),
+      React.createElement('button', { onClick: handleReset }, 'Reset'),
+      React.createElement('button', { onClick: handleToss }, 'Toss'),
+      React.createElement('button', { onClick: handleWildcard }, 'Wildcard'),
+      React.createElement('button', { onClick: handleRegroup }, 'Regroup')
+    ),
+    React.createElement(
+      'div',
+      { className: 'cards' },
+      drawnCards.map((card, index) =>
+        React.createElement(Card, {
+          key: `${card.suit}-${card.value}-${index}`,
+          suit: card.suit,
+          value: card.value,
+          isPicked: pickedIndex === index,
+          onClick: () => handleCardClick(index),
+        })
+      )
+    )
+  );
+};
+  ReactDOM.render(React.createElement(App), document.getElementById('root'));
+    </script>
+  </body>
+</html>
